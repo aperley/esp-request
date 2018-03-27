@@ -317,6 +317,7 @@ request_t *req_new(const char *uri)
     REQ_CHECK(req->response->header == NULL, "Error create response header", return NULL);
     memset(req->response->header, 0, sizeof(req_list_t));
 
+    req_setopt(req, REQ_SET_HTTP_VER, (void*)HTTP_VER_1_1);
     req_setopt(req, REQ_SET_PROTOCOL, (void*)PROTOCOL_HTTP);
     req->socket = -1;
 
@@ -387,11 +388,25 @@ void req_setopt(request_t *req, REQ_OPTS opt, void* data)
             req->protocol = (REQ_PROTOCOL)data;
 
             if(req->protocol == PROTOCOL_HTTP) {
-                req_list_set_key(req->opt, "protocol", "HTTP/1.1");
+                if(req->http_ver == HTTP_VER_1_1) {
+                    req_list_set_key(req->opt, "protocol", "HTTP/1.1");
+                } else {
+                    req_list_set_key(req->opt, "protocol", "HTTP/1.0");
+                }
             } else if(req->protocol == PROTOCOL_SIP) {
                 req_list_set_key(req->opt, "protocol", "SIP/2.0");
             } else {
                 req_list_set_key(req->opt, "protocol", "Unknown");
+            }
+
+            break;
+        case REQ_SET_HTTP_VER:
+            req->http_ver = (REQ_HTTP_VER)data;
+
+            if(req->http_ver == HTTP_VER_1_1) {
+                req_list_set_key(req->opt, "protocol", "HTTP/1.1");
+            } else {
+                req_list_set_key(req->opt, "protocol", "HTTP/1.0");
             }
 
             break;
