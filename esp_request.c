@@ -641,6 +641,8 @@ static int req_process_download(request_t *req)
             content_len = req_list_get_key(req->response->header, "Content-Length");
             if(content_len) {
                 req->response->len = atoi(content_len->value);
+            } else if((req->buffer->bytes_write - header_off) != 0) {
+                req->response->len = req->buffer->bytes_write - header_off;
             }
             if(req->response->len && req->download_callback && (req->buffer->bytes_write - header_off) != 0) {
                 if(req->download_callback(req, (void *)(req->buffer->data + header_off), req->buffer->bytes_write - header_off) < 0) break;
